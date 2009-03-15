@@ -2,14 +2,14 @@ Source: edje
 Section: gui
 Priority: optional
 Maintainer: Alexander Kerner <lunohod@openinkpot.org>
-Build-Depends: debhelper (>= 6), cdbs, libeet-dev, libevas-dev, libecore-dev,
- libembryo-dev, doxygen
+Build-Depends: debhelper (>= 6), cdbs, libeet-dev, libevas-dev, libecore-dev, libembryo-dev, doxygen, automake, libtool, pkg-config
 Standards-Version: 3.7.3
 Homepage: http://www.enlightenment.org
-XCS-Cross-Host-Build-Depends: debhelper (>= 5), cdbs
+XCS-Cross-Host-Build-Depends: debhelper (>= 5), cdbs, cdbs-embedded, automake, libtool, pkg-config
 XCS-Cross-Build-Depends: libeet-dev, libevas-dev, libecore-dev, libembryo-dev
 XS-Vcs-Git: http://git.openinkpot.org/edje.git
 XS-Vcs-Browser: http://git.openinkpot.org/edje.git
+Format: 3.0 (native)
 
 Package: libedje-bin
 Architecture: any

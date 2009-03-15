@@ -1,3 +1,11 @@
+edje (0.9.9.050-20090103-2) asimov; urgency=low
+
+  * fixed build dependencies
+  * removed shlibs.local
+  * unstable -> asimov
+
+ -- Alexander Kerner <lunohod@openinkpot.org>  Sun, 15 Mar 2009 17:21:16 +0100
+
 edje (0.9.9.050-20090103-1) unstable; urgency=low
 
   * OI build
