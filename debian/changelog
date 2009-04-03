@@ -1,3 +1,9 @@
+edje (0.9.9.050-20090103-2+b1) asimov; urgency=low
+
+  * Rebuild with new toolchain.
+
+ -- Alexander Kerner <lunohod@openinkpot.org>  Fri, 03 Apr 2009 16:15:51 +0200
+
 edje (0.9.9.050-20090103-2) asimov; urgency=low
 
   * fixed build dependencies
