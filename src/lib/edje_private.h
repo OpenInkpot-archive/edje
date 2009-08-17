@@ -14,13 +14,14 @@
 #include <Ecore.h>
 #include <Ecore_Str.h>
 #include <Ecore_Job.h>
+#ifdef HAVE_ECORE_IMF
+# include <Ecore_IMF.h>
+#endif
 #include <Eet.h>
 #include <Embryo.h>
-#include <eina_stringshare.h>
 
 #include "Edje.h"
 #include "Edje_Edit.h"
-
 
 #ifdef __GNUC__
 # if __GNUC__ >= 4
@@ -234,6 +235,9 @@ typedef struct _Edje_Patterns                        Edje_Patterns;
 #define EDJE_ENTRY_EDIT_MODE_SELECTABLE 1
 #define EDJE_ENTRY_EDIT_MODE_EDITABLE 2
 #define EDJE_ENTRY_EDIT_MODE_PASSWORD 3
+
+#define EDJE_ENTRY_SELECTION_MODE_DEFAULT 0
+#define EDJE_ENTRY_SELECTION_MODE_EXPLICIT 1
 
 #define EDJE_PART_PATH_SEPARATOR ':'
 #define EDJE_PART_PATH_SEPARATOR_STRING ":"
@@ -483,6 +487,7 @@ struct _Edje_Part
    unsigned char          use_alternate_font_metrics;
    unsigned char          pointer_mode;
    unsigned char          entry_mode;
+   unsigned char          select_mode;
    unsigned char          multiline;
 };
 
@@ -520,6 +525,7 @@ struct _Edje_Part_Description
    struct {
       Eina_List     *tween_list; /* list of Edje_Part_Image_Id */
       int            id; /* the image id to use */
+      int            scale_hint; /* evas scale hint */
    } image;
 
    struct {
@@ -577,21 +583,24 @@ struct _Edje_Part_Description
       unsigned char  min_y; /* if text size should be part min size */
       unsigned char  max_x; /* if text size should be part max size */
       unsigned char  max_y; /* if text size should be part max size */
-
    } text;
 
    struct {
       char          *layout, *alt_layout;
       Edje_Alignment align;
       struct {
-	      int x, y;
+         int x, y;
       } padding;
+      struct {
+         Eina_Bool h, v;
+      } min;
    } box;
+   
    struct {
       unsigned char  homogeneous;
       Edje_Alignment align;
       struct {
-	      int x, y;
+         int x, y;
       } padding;
    } table;
 
@@ -684,6 +693,7 @@ struct _Edje
    int                   block;
    int                   load_error;
    int                   freeze;
+   double                scale;
 
    struct {
       void (*func) (void *data, Evas_Object *obj, const char *part);
@@ -714,78 +724,79 @@ struct _Edje
 
 struct _Edje_Real_Part
 {
-   Edje                     *edje;
-   Evas_Object              *object;
-   Eina_List                *extra_objects;
-   Evas_Object              *swallowed_object;
-   Eina_List                *items;
-   void                     *entry_data;
-   Evas_Object              *cursorbg_object;
-   Evas_Object              *cursorfg_object;
-   // FIXME: add selection objects
-   Edje_Part                *part;
-   int                       x, y, w, h;
-   Edje_Rectangle            req;
-   Edje_Position             offset;
+   Edje                     *edje; // 4
+   Edje_Part                *part; // 4
+   Evas_Object              *object; // 4
+   Eina_List                *extra_objects; // 4
+   Evas_Object              *swallowed_object; // 4 // FIXME: move with swallow_params data
+   Eina_List                *items; // 4 //FIXME: only if table/box
+   void                     *entry_data; // 4 // FIXME: move to entry section
+   Evas_Object              *cursorbg_object; // 4 // FIXME: move to entry section
+   Evas_Object              *cursorfg_object; // 4 // FIXME: move to entry section
+   int                       x, y, w, h; // 16
+   Edje_Rectangle            req; // 16
+   Edje_Position             offset; // 8 // FIXME: move to text section
    struct {
-      Edje_Size min, max;
-      Edje_Aspect aspect;
-   } swallow_params;
+      Edje_Size min, max; // 16
+      Edje_Aspect aspect; // 12
+   } swallow_params; // 28 // FIXME: only if type SWALLOW
    struct {
-      double        x, y;
-      Edje_Position_Scale val, size, step, page;
+      double        x, y; // 16
+      Edje_Position_Scale val, size, step, page; // 64
       struct {
-	 unsigned int count;
-	 int  x, y;
+	 unsigned int count; // 4
+	 int  x, y; // 8
       } down;
       struct {
-	 int  x, y;
+	 int  x, y; // 8
       } tmp;
-      unsigned char need_reset : 1;
-   } drag;
+      unsigned char need_reset : 1; // 4
+   } drag; // 104 // FIME: make drag pointer to struct optional
    struct {
-      Edje_Real_Part        *source;
-      Edje_Real_Part        *text_source;
-      const char            *text;
-      const char	    *font;
-      const char	    *style;
-      int                    size;
+      Edje_Real_Part        *source; // 4
+      Edje_Real_Part        *text_source; // 4
+      const char            *text; // 4
+      const char	    *font; // 4 text only
+      const char	    *style; // 4 text only
+      int                    size; // 4 text only
       struct {
-	 double              in_w, in_h;
-	 int                 in_size;
-	 const char	    *in_str;
-	 const char         *out_str;
-	 int                 out_size;
-	 double              align_x, align_y;
-	 double              elipsis;
-	 int                 fit_x, fit_y;
-      } cache;
-   } text;
+	 double              in_w, in_h; // 16 text only
+	 int                 in_size; // 4 text only
+	 const char	    *in_str; // 4 text only
+	 const char         *out_str; // 4 text only
+	 int                 out_size; // 4 text only
+	 double              align_x, align_y; // 16 text only
+	 double              elipsis; // 8 text only
+	 int                 fit_x, fit_y; // 8 text only
+      } cache; // 64
+   } text; // 86 // FIXME make text a potiner to struct and alloc at end
+                 // if part type is TEXT move common members textblock +
+                 // text to front and have smaller struct for textblock
 
-   double                    description_pos;
-   Edje_Part_Description    *chosen_description;
+   double                    description_pos; // 8
+   Edje_Part_Description    *chosen_description; // 4
    struct {
-      Edje_Part_Description *description;
-      Edje_Real_Part        *rel1_to_x;
-      Edje_Real_Part        *rel1_to_y;
-      Edje_Real_Part        *rel2_to_x;
-      Edje_Real_Part        *rel2_to_y;
-   } param1, param2, custom;
+      Edje_Part_Description *description; // 4
+      Edje_Real_Part        *rel1_to_x; // 4
+      Edje_Real_Part        *rel1_to_y; // 4
+      Edje_Real_Part        *rel2_to_x; // 4
+      Edje_Real_Part        *rel2_to_y; // 4
+   } param1, param2, custom; // 60 // FIXME: custom should be alloced on demand - 20--
 
-   Edje_Real_Part           *confine_to;
-   Edje_Real_Part           *clip_to;
+   Edje_Real_Part           *confine_to; // 4 // fixme - make part of drag
+   Edje_Real_Part           *clip_to; // 4
 
-   Edje_Running_Program     *program;
-   Edje_Real_Part           *events_to;
+   Edje_Running_Program     *program; // 4
+   Edje_Real_Part           *events_to; // 4
 
-   int                       clicked_button;
-   int                       gradient_id;
+   int                       clicked_button; // 4
+   int                       gradient_id; // 4
 
-   unsigned char             calculated;
-   unsigned char             calculating;
+   unsigned char             calculated; // 1
+   unsigned char             calculating; // 1
 
-   unsigned char             still_in   : 1;
-};
+   unsigned char             still_in   : 1; // 2
+}; //  394
 
 struct _Edje_Running_Program
 {
@@ -822,6 +833,7 @@ struct _Edje_Calc_Params
    struct {
       Edje_Alignment align; /* text alignment within bounds */
       double         elipsis;
+      int            size;
    } text;
    struct {
      int             id;
@@ -1131,18 +1143,18 @@ void              _edje_object_part_swallow_free_cb(void *data, Evas *e, Evas_Ob
 void              _edje_real_part_swallow(Edje_Real_Part *rp, Evas_Object *obj_swallow);
 void              _edje_box_init(void);
 void              _edje_box_shutdown(void);
-Evas_Bool         _edje_box_layout_find(const char *name, Evas_Object_Box_Layout *cb, void **data, void (**free_data)(void *data));
+Eina_Bool         _edje_box_layout_find(const char *name, Evas_Object_Box_Layout *cb, void **data, void (**free_data)(void *data));
 
-Evas_Bool         _edje_real_part_box_append(Edje_Real_Part *rp, Evas_Object *child_obj);
-Evas_Bool         _edje_real_part_box_prepend(Edje_Real_Part *rp, Evas_Object *child_obj);
-Evas_Bool         _edje_real_part_box_insert_before(Edje_Real_Part *rp, Evas_Object *child_obj, const Evas_Object *ref);
-Evas_Bool         _edje_real_part_box_insert_at(Edje_Real_Part *rp, Evas_Object *child_obj, unsigned int pos);
+Eina_Bool         _edje_real_part_box_append(Edje_Real_Part *rp, Evas_Object *child_obj);
+Eina_Bool         _edje_real_part_box_prepend(Edje_Real_Part *rp, Evas_Object *child_obj);
+Eina_Bool         _edje_real_part_box_insert_before(Edje_Real_Part *rp, Evas_Object *child_obj, const Evas_Object *ref);
+Eina_Bool         _edje_real_part_box_insert_at(Edje_Real_Part *rp, Evas_Object *child_obj, unsigned int pos);
 Evas_Object      *_edje_real_part_box_remove(Edje_Real_Part *rp, Evas_Object *child_obj);
 Evas_Object      *_edje_real_part_box_remove_at(Edje_Real_Part *rp, unsigned int pos);
-Evas_Bool         _edje_real_part_box_remove_all(Edje_Real_Part *rp, Evas_Bool clear);
-Evas_Bool         _edje_real_part_table_pack(Edje_Real_Part *rp, Evas_Object *child_obj, unsigned short col, unsigned short row, unsigned short colspan, unsigned short rowspan);
-Evas_Bool         _edje_real_part_table_unpack(Edje_Real_Part *rp, Evas_Object *child_obj);
-void              _edje_real_part_table_clear(Edje_Real_Part *rp, Evas_Bool clear);
+Eina_Bool         _edje_real_part_box_remove_all(Edje_Real_Part *rp, Eina_Bool clear);
+Eina_Bool         _edje_real_part_table_pack(Edje_Real_Part *rp, Evas_Object *child_obj, unsigned short col, unsigned short row, unsigned short colspan, unsigned short rowspan);
+Eina_Bool         _edje_real_part_table_unpack(Edje_Real_Part *rp, Evas_Object *child_obj);
+void              _edje_real_part_table_clear(Edje_Real_Part *rp, Eina_Bool clear);
 
 void          _edje_embryo_script_init      (Edje *ed);
 void          _edje_embryo_script_shutdown  (Edje *ed);
@@ -1297,5 +1309,7 @@ void _edje_entry_select_all(Edje_Real_Part *rp);
 const Eina_List *_edje_entry_anchor_geometry_get(Edje_Real_Part *rp, const char *anchor);
 const Eina_List *_edje_entry_anchors_list(Edje_Real_Part *rp);
 void _edje_entry_cursor_geometry_get(Edje_Real_Part *rp, Evas_Coord *cx, Evas_Coord *cy, Evas_Coord *cw, Evas_Coord *ch);
-  
+void _edje_entry_select_allow_set(Edje_Real_Part *rp, Eina_Bool allow);
+void _edje_entry_select_abort(Edje_Real_Part *rp);
+
 #endif

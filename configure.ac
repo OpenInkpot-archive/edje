@@ -3,8 +3,8 @@ dnl Process this file with autoconf to produce a configure script.
 # get rid of that stupid cache mechanism
 rm -f config.cache
 
-AC_INIT([edje], [0.9.9.050], [enlightenment-devel@lists.sourceforge.net])
-AC_PREREQ(2.52)
+AC_INIT([edje], [0.9.92.062], [enlightenment-devel@lists.sourceforge.net])
+AC_PREREQ([2.52])
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CANONICAL_BUILD
@@ -25,6 +25,16 @@ VMIC=`echo $PACKAGE_VERSION | awk -F. '{printf("%s", $3);}'`
 SNAP=`echo $PACKAGE_VERSION | awk -F. '{printf("%s", $4);}'`
 version_info=`expr $VMAJ + $VMIN`":$VMIC:$VMIN"
 AC_SUBST(version_info)
+
+release="ver-svn-03"
+case "$host_os" in
+   mingw32ce* | cegcc*)
+      ;;
+   *)
+      release_info="-release $release"
+      ;;
+esac
+AC_SUBST(release_info)
 
 
 ### Default options with respect to host
@@ -50,7 +60,7 @@ requirement_edje=""
 AC_ARG_ENABLE([edje-cc],
    [AC_HELP_STRING([--disable-edje-cc], [disable building of edje_cc])],
    [
-    if test x"$enableval" = x"yes" ; then
+    if test "x${enableval}" = "xyes" ; then
        have_edje_cc="yes"
     else
        have_edje_cc="no"
@@ -123,20 +133,34 @@ fi
 
 AC_SUBST(vimdir)
 
+### Checks for programs
+AC_PROG_CC
 
-### Checks for libraries
+# doxygen program for documentation building
+
+EFL_CHECK_DOXYGEN([build_doc="yes"], [build_doc="no"])
+
+# python
+
+AM_PATH_PYTHON([2.5], , [:])
+AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != : ])
+
+# pkg-config
 
 PKG_PROG_PKG_CONFIG
+
+
+### Checks for libraries
 
 # Evil library for compilation on Windows
 
 EFL_EDJE_BUILD=""
 case "$host_os" in
    mingw* | cegcc*)
-   PKG_CHECK_MODULES([EVIL], [evil])
-   AC_DEFINE(HAVE_EVIL, 1, [Set to 1 if Evil library is installed])
-   requirement_edje="evil ${requirement_edje}"
-   EFL_EDJE_BUILD="-DEFL_EDJE_BUILD"
+      PKG_CHECK_MODULES([EVIL], [evil])
+      AC_DEFINE(HAVE_EVIL, 1, [Set to 1 if Evil library is installed])
+      requirement_edje="evil ${requirement_edje}"
+      EFL_EDJE_BUILD="-DEFL_EDJE_BUILD"
    ;;
 esac
 AC_SUBST(EFL_EDJE_BUILD)
@@ -151,10 +175,22 @@ PKG_CHECK_MODULES([EDJE],
     ecore >= 0.9.9
     ecore-job >= 0.9.9
     embryo >= 0.9.1
-   ]
-)
+   ])
 
 requirement_edje="embryo ecore-job ecore evas eet eina-0 ${requirement_edje}"
+
+have_ecore_imf="no"
+PKG_CHECK_MODULES([ECORE_IMF],
+   [
+    ecore-imf >= 0.9.9
+    ecore-imf-evas >= 0.9.9
+   ],
+   [
+    AC_DEFINE(HAVE_ECORE_IMF, 1, [Input Method Support for Edje Entry])
+    have_ecore_imf="yes"
+    requirement_edje="ecore-imf ecore-imf-evas ${requirement_edje}"
+   ],
+   [have_ecore_imf="no"])
 
 # Dependencies for the binaries
 
@@ -166,18 +202,6 @@ fi
 
 ### Checks for header files
 AC_CHECK_HEADERS([locale.h])
-
-### Checks for programs
-AC_PROG_CC
-
-# doxygen program for documentation building
-
-EFL_CHECK_DOXYGEN([build_doc="yes"], [build_doc="no"])
-
-# python
-
-AM_PATH_PYTHON([2.5], , [:])
-AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != : ])
 
 
 ### Checks for types
@@ -201,6 +225,9 @@ case "$host_os" in
       EDJE_CFLAGS="${EDJE_CFLAGS} -mwin32 -D_WIN32_WCE=0x0420"
       ;;
 esac
+
+
+### Checks for linker characteristics
 
 lt_enable_auto_import=""
 case "$host_os" in
@@ -253,11 +280,13 @@ echo "------------------------------------------------------------------------"
 echo
 echo "Configuration Options Summary:"
 echo
+echo "  Ecore IMF............: $have_ecore_imf"
+echo
 echo "  EDJE_PROGRAM_CACHE...: $want_edje_program_cache"
 echo
 echo "  Build binaries.......: $have_edje_cc"
 echo
-echo "  Documentation........: ${enable_doc}"
+echo "  Documentation........: ${build_doc}"
 echo
 echo "  Compilation..........: make"
 echo

@@ -1,3 +1,9 @@
+edje (0.9.92.062-1) asimov; urgency=low
+
+  * svn-03 snapshot
+
+ -- Mikhail Gusarov <dottedmag@dottedmag.net>  Wed, 12 Aug 2009 03:15:25 +0700
+
 edje (0.9.9.050-20090103-2+b1) asimov; urgency=low
 
   * Rebuild with new toolchain.
@@ -17,17 +23,3 @@ edje (0.9.9.050-20090103-1) unstable; urgency=low
   * OI build
 
  -- Alexander Kerner <lunohod@openinkpot.org>  Sun, 04 Jan 2009 01:17:13 +0100
-
-edje (0.9.9.050-1) unstable; urgency=low
-
-  * a SVN release.
-
- -- quaker <quaker66@gmail.com>  Fri, 26 Dec 2008 12:17:55 +0100
-
-
-edje (0.9.9.043-1) unstable; urgency=low
-
-  * a CVS snapshot release.
-
- -- Falko Schmidt <falko@alphagemini.org>  Mon, 28 Apr 2008 15:54:13 +0000
-

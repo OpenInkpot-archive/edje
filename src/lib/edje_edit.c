@@ -3443,6 +3443,53 @@ edje_edit_image_add(Evas_Object *obj, const char* path)
    return 1;
 }
 
+EAPI unsigned char
+edje_edit_image_data_add(Evas_Object *obj, const char *name, int id)
+{
+   Eina_List *l;
+   Edje_Image_Directory_Entry *de;
+   Edje_Image_Directory_Entry *i, *t;
+   int free_id = 0;
+
+   GET_ED_OR_RETURN(0);
+
+   if (!name) return 0;
+   if (!ed->file) return 0;
+   if (!ed->path) return 0;
+
+   /* Create Image_Directory if not exist */
+   if (!ed->file->image_dir)
+     ed->file->image_dir = mem_alloc(sizeof(Edje_Image_Directory));
+
+   /* Loop trough image directory to find if image exist */
+   t = NULL;
+   EINA_LIST_FOREACH(ed->file->image_dir->entries, l, i)
+     {
+	if (!i) return 0;
+	if (i->id == id) t = i;
+     }
+
+   /* Create Image Entry */
+   if (!t)
+     de = mem_alloc(sizeof(Edje_Image_Directory_Entry));
+   else
+     {
+	de = t;
+	free(de->entry);
+     }
+   de->entry = mem_strdup(name);
+   de->id = id;
+   de->source_type = 1;
+   de->source_param = 1;
+
+   /* Add image to Image Directory */
+   if (!t)
+     ed->file->image_dir->entries =
+	eina_list_append(ed->file->image_dir->entries, de);
+
+   return 1;
+}
+
 EAPI int
 edje_edit_image_id_get(Evas_Object *obj, const char *image_name)
 {
@@ -3640,14 +3687,19 @@ EAPI unsigned char
 edje_edit_state_image_border_fill_get(Evas_Object *obj, const char *part, const char *state)
 {
    GET_PD_OR_RETURN(0);
-   return pd->border.no_fill ? 0 : 1;
+   if (pd->border.no_fill == 0) return 1;
+   else if (pd->border.no_fill == 1) return 0;
+   else if (pd->border.no_fill == 2) return 2;
+   return 0;
 }
 
 EAPI void
 edje_edit_state_image_border_fill_set(Evas_Object *obj, const char *part, const char *state, unsigned char fill)
 {
    GET_PD_OR_RETURN();
-   pd->border.no_fill = fill ? 0 : 1;
+   if (fill == 0) pd->border.no_fill = 1;
+   else if (fill == 1) pd->border.no_fill = 0;
+   else if (fill == 2) pd->border.no_fill = 2;
 
    edje_object_calc_force(obj);
 }
@@ -5068,8 +5120,12 @@ _edje_generate_source_of_state(Evas_Object *obj, const char *part, const char *s
       
 	if (pd->border.l || pd->border.r || pd->border.t || pd->border.b)
 	  fprintf(f, I6"border: %d %d %d %d;\n", pd->border.l, pd->border.r, pd->border.t, pd->border.b);
-	if (pd->border.no_fill)
-	  fprintf(f, I6"middle: 0;\n");
+	if (pd->border.no_fill == 1)
+	  fprintf(f, I6"middle: NONE;\n");
+	else if (pd->border.no_fill == 0)
+	  fprintf(f, I6"middle: DEFAULT;\n");
+	else if (pd->border.no_fill == 2)
+	  fprintf(f, I6"middle: SOLID;\n");
 
 	fprintf(f, I5"}\n");//image
      }

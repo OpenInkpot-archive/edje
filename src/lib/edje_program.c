@@ -2,6 +2,7 @@
  * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
  */
 
+#define _GNU_SOURCE
 #include <string.h>
 
 #include "edje_private.h"
@@ -95,9 +96,9 @@ edje_object_signal_callback_add(Evas_Object *obj, const char *emission, const ch
    if (!ed) return;
    if (ed->delete_me) return;
    escb = calloc(1, sizeof(Edje_Signal_Callback));
-   if ((emission) && (emission[0]))
+   if (emission[0])
      escb->signal = eina_stringshare_add(emission);
-   if ((source) && (source[0]))
+   if (source[0])
      escb->source = eina_stringshare_add(source);
    escb->func = func;
    escb->data = data;
@@ -633,7 +634,7 @@ _edje_program_run(Edje *ed, Edje_Program *pr, int force, const char *ssig, const
 		  if (pt->id == runp->program->id)
 		    {
 		       _edje_program_end(ed, runp);
-		       goto done;
+//		       goto done;
 		    }
 	       }
 	     EINA_LIST_FOREACH(ed->pending_actions, ll, pp)
@@ -643,7 +644,7 @@ _edje_program_run(Edje *ed, Edje_Program *pr, int force, const char *ssig, const
 		       ed->pending_actions = eina_list_remove(ed->pending_actions, pp);
 		       ecore_timer_del(pp->timer);
 		       free(pp);
-		       goto done;
+//		       goto done;
 		    }
 	       }
 	     done:
@@ -814,8 +815,49 @@ _edje_emit(Edje *ed, const char *sig, const char *src)
    Edje_Message_Signal emsg;
    Eina_List *l;
    Evas_Object *obj;
-   
+   const char *sep;
+
    if (ed->delete_me) return;
+
+   sep = strchr(sig, ':');
+   if (sep)
+     {
+        size_t length;
+        char *part;
+       /* the signal contains a colon, split the signal into "group:signal",
+	* and deliver it to "group"
+	*/
+       length = strlen(sig) + 1;
+       part = alloca(length);
+       if (part)
+	 {
+            char *newsig;
+	    int i;
+
+            memcpy(part, sig, length);
+            newsig = part + (sep - sig);
+	    *newsig = '\0';
+	    newsig++;
+
+            for (i = 0; i < ed->table_parts_size; i++)
+              {
+                 Edje_Real_Part *rp = ed->table_parts[i];
+                 if ((rp->part->type == EDJE_PART_TYPE_GROUP) &&
+                     (rp->swallowed_object) &&
+                     (rp->part) && (rp->part->name) &&
+                     (strcmp(rp->part->name, part) == 0))
+                   {
+                      Edje *ed2 = _edje_fetch(rp->swallowed_object);
+                      if (ed2) _edje_emit(ed2, newsig, src);
+                      return; /* stop processing.
+			       * XXX maybe let signal be processed anyway?
+			       * XXX in this case, just comment this line
+			       */
+                   }
+              }
+         }
+     }
+
    emsg.sig = sig;
    emsg.src = src;
    _edje_message_send(ed, EDJE_QUEUE_SCRIPT, EDJE_MESSAGE_SIGNAL, 0, &emsg);
