@@ -2,19 +2,18 @@ Source: edje
 Section: gui
 Priority: optional
 Maintainer: Alexander Kerner <lunohod@openinkpot.org>
-Build-Depends: debhelper (>= 6), cdbs, libeet-dev, libevas-dev (>= 0.9.9.062-1), libecore-dev (>= 0.9.9.062-1), libembryo-dev, automake, libtool, pkg-config
+Build-Depends: debhelper (>= 6), cdbs, libeet-dev, libeina-dev (>= 0.9.9.063-1), libevas-dev (>= 0.9.9.063-4), libecore-dev (>= 0.9.9.063-5), libembryo-dev, liblua5.1-dev (>= 5.1.4-2), automake, libtool, pkg-config
 Standards-Version: 3.8.2
 Homepage: http://www.enlightenment.org
 XCS-Cross-Host-Build-Depends: debhelper (>= 6), cdbs, cdbs-embedded, automake, libtool, pkg-config
-XCS-Cross-Build-Depends: libeet-dev, libevas-dev (>= 0.9.9.062-1), libecore-dev (>= 0.9.9.062-1), libembryo-dev
+XCS-Cross-Build-Depends: libeet-dev, libeina-dev (>= 0.9.9.063-1), libevas-dev (>= 0.9.9.063-4), libecore-dev (>= 0.9.9.063-5), libembryo-dev, liblua5.1-dev (>= 5.1.4-2)
 XS-Vcs-Git: http://git.openinkpot.org/edje.git
 XS-Vcs-Browser: http://git.openinkpot.org/edje.git
 
 Package: libedje-bin
 Architecture: any
 Section: gui
-Depends: ${misc:Depends}, ${shlibs:Depends}, libembryo-bin (>= 0.9.9.062-1), libevas-engines 
-Provides: libedje0-bin
+Depends: ${misc:Depends}, ${shlibs:Depends}, libembryo-bin (>= 0.9.9.063-1)
 Description: Various binaries for use with libedje
  Edje is a graphical layout and animation library for animated resizable,
  compressed and scalable themes. It is the theming engine behind
@@ -25,7 +24,7 @@ Description: Various binaries for use with libedje
   - edje_decc: Used to decompile compiled edje files.
   - edje_recc: A convenience script to recompile EDC files.
 
-Package: libedje-svn-03
+Package: libedje-svn-05
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Suggests: libedje-bin (= ${binary:Version})
@@ -37,7 +36,7 @@ Description: Graphical layout and animation library
 Package: libedje-dev
 Architecture: any
 Section: libdevel
-Depends: ${misc:Depends}, libedje-svn-03 (= ${binary:Version}), libeet-dev, libembryo-dev, libecore-dev (>= 0.9.9.062-1), libevas-dev (>= 0.9.9.062-1), libeina-dev (>= 0.0.2.062-1), libedje-bin
+Depends: ${misc:Depends}, libedje-svn-05 (= ${binary:Version}), libeet-dev, libembryo-dev, libecore-dev (>= 0.9.9.063-5), libevas-dev (>= 0.9.9.063-4), libeina-dev (>= 0.9.9.063-1), libedje-bin, liblua5.1-dev (>= 5.1.4-2)
 Provides: libedje0-dev
 Description: libedje headers and static libraries
  Edje is a graphical layout and animation library for animated resizable,
@@ -50,7 +49,7 @@ Package: libedje-dbg
 Architecture: any
 Section: debug
 Priority: extra
-Depends: ${misc:Depends}, libedje-svn-03 (= ${binary:Version})
+Depends: ${misc:Depends}, libedje-svn-05 (= ${binary:Version})
 Description: Debugging symbols for libedje
  Edje is a graphical layout and animation library for animated resizable,
  compressed and scalable themes. It is the theming engine behind
