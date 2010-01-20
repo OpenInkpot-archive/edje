@@ -1,14 +1,15 @@
 Source: edje
-Section: gui
+Section: host/tools
 Priority: optional
 Maintainer: Alexander Kerner <lunohod@openinkpot.org>
-Build-Depends: debhelper (>= 6), cdbs, libeet-dev, libeina-dev (>= 0.9.9.063-1), libevas-dev (>= 0.9.9.063-4), libecore-dev (>= 0.9.9.063-5), libembryo-dev, liblua5.1-dev (>= 5.1.4-2), automake, libtool, pkg-config
+Build-Depends: debhelper (>= 6), cdbs, libeet-dev, libeina-dev (>= 0.9.9.063-1), libevas-dev (>= 0.9.9.063-4), libecore-dev (>= 0.9.9.063-5), libembryo-dev, liblua5.1-0-dev, automake, libtool, pkg-config
 Standards-Version: 3.8.2
 Homepage: http://www.enlightenment.org
 XCS-Cross-Host-Build-Depends: debhelper (>= 6), cdbs, cdbs-embedded, automake, libtool, pkg-config
 XCS-Cross-Build-Depends: libeet-dev, libeina-dev (>= 0.9.9.063-1), libevas-dev (>= 0.9.9.063-4), libecore-dev (>= 0.9.9.063-5), libembryo-dev, liblua5.1-dev (>= 5.1.4-2)
 XS-Vcs-Git: http://git.openinkpot.org/edje.git
 XS-Vcs-Browser: http://git.openinkpot.org/edje.git
+XCS-Cross-Mode: both
 
 Package: libedje-bin
 Architecture: any
@@ -36,7 +37,7 @@ Description: Graphical layout and animation library
 Package: libedje-dev
 Architecture: any
 Section: libdevel
-Depends: ${misc:Depends}, libedje-svn-05 (= ${binary:Version}), libeet-dev, libembryo-dev, libecore-dev (>= 0.9.9.063-5), libevas-dev (>= 0.9.9.063-4), libeina-dev (>= 0.9.9.063-1), libedje-bin, liblua5.1-dev (>= 5.1.4-2)
+Depends: ${misc:Depends}, libedje-svn-05 (= ${binary:Version}), libeet-dev, libembryo-dev, libecore-dev (>= 0.9.9.063-5), libevas-dev (>= 0.9.9.063-4), libeina-dev (>= 0.9.9.063-1), libedje-bin, liblua5.1-dev (>= 5.1.4-2) | liblua5.1-0-dev
 Provides: libedje0-dev
 Description: libedje headers and static libraries
  Edje is a graphical layout and animation library for animated resizable,
