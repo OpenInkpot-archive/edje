@@ -1,3 +1,9 @@
+edje (0.9.92.063-2) zelazny; urgency=low
+
+  * Build edje as host/tools package (OI#49)
+
+ -- Mikhail Gusarov <dottedmag@dottedmag.net>  Wed, 20 Jan 2010 17:42:17 +0600
+
 edje (0.9.92.063-1) zelazny; urgency=low
 
   * svn-05 snapshot
