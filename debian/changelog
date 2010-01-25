@@ -1,3 +1,9 @@
+edje (0.9.92.063-3) zelazny; urgency=low
+
+  * Add cpp as dependency of libedje-bin.
+
+ -- Mikhail Gusarov <dottedmag@dottedmag.net>  Mon, 25 Jan 2010 22:49:45 +0600
+
 edje (0.9.92.063-2) zelazny; urgency=low
 
   * Build edje as host/tools package (OI#49)
