@@ -14,7 +14,7 @@ XCS-Cross-Mode: both
 Package: libedje-bin
 Architecture: any
 Section: gui
-Depends: ${misc:Depends}, ${shlibs:Depends}, libembryo-bin (>= 0.9.9.063-1)
+Depends: ${misc:Depends}, ${shlibs:Depends}, libembryo-bin (>= 0.9.9.063-1), cpp
 Description: Various binaries for use with libedje
  Edje is a graphical layout and animation library for animated resizable,
  compressed and scalable themes. It is the theming engine behind
