@@ -1,3 +1,9 @@
+edje (0.9.99.49898-1) zelazny; urgency=low
+
+  * svn-06 snapshot
+
+ -- Alexander Kerner <lunohod@openinkpot.org>  Fri, 02 Jul 2010 23:59:20 +0200
+
 edje (0.9.92.063-4) zelazny; urgency=low
 
   * Avoid amalgamation mode on i386 and amd64
